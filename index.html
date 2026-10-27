@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Angličtina krok za krokem</title>
+<style>
+  :root {
+    --bg: #f6f7fb;
+    --card: #ffffff;
+    --text: #1d2433;
+    --muted: #6b7385;
+    --primary: #3b6ef5;
+    --primary-ink: #ffffff;
+    --ok: #1f9d55;
+    --ok-bg: #e6f6ec;
+    --bad: #d64545;
+    --bad-bg: #fdecec;
+    --border: #e1e4ec;
+    --shadow: 0 2px 10px rgba(20, 30, 60, .07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151c;
+      --card: #1b2029;
+      --text: #e7eaf1;
+      --muted: #9aa3b5;
+      --primary: #6c93ff;
+      --primary-ink: #0d1220;
+      --ok: #4cc77f;
+      --ok-bg: #173324;
+      --bad: #f07575;
+      --bad-bg: #3a1c1c;
+      --border: #2c3341;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  header h1 { font-size: 1.15rem; margin: 0; cursor: pointer; }
+  .stats { display: flex; gap: 14px; font-size: .95rem; color: var(--muted); }
+  .stats b { color: var(--text); }
+  main { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  h2 { margin: 0 0 8px; font-size: 1.3rem; }
+  p.muted { color: var(--muted); margin: 0 0 16px; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .option {
+    text-align: left;
+    background: var(--card);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font: inherit;
+    cursor: pointer;
+    transition: border-color .15s, transform .05s;
+  }
+  .option:hover { border-color: var(--primary); }
+  .option:active { transform: scale(.99); }
+  .option.selected { border-color: var(--primary); }
+  .option.correct { border-color: var(--ok); background: var(--ok-bg); }
+  .option.wrong { border-color: var(--bad); background: var(--bad-bg); }
+  .option[disabled] { cursor: default; }
+  .option small { display: block; color: var(--muted); }
+  .option .tag { font-weight: 700; font-size: 1.05rem; }
+  .btn {
+    background: var(--primary);
+    color: var(--primary-ink);
+    border: 0;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn.secondary { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+  .btn[disabled] { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .progress { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 18px; }
+  .progress > div { height: 100%; background: var(--primary); width: 0; transition: width .25s; }
+  .prompt { font-size: 1.5rem; font-weight: 700; margin: 6px 0 18px; }
+  .prompt .speak { font-size: 1rem; margin-left: 8px; vertical-align: middle; }
+  .feedback { margin-top: 16px; padding: 12px 14px; border-radius: 10px; display: none; }
+  .feedback.ok { display: block; background: var(--ok-bg); color: var(--ok); }
+  .feedback.bad { display: block; background: var(--bad-bg); color: var(--bad); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; min-height: 52px; padding: 8px; border: 2px dashed var(--border); border-radius: 12px; margin-bottom: 12px; }
+  .chip {
+    background: var(--card);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font: inherit;
+    cursor: pointer;
+  }
+  .chip:hover { border-color: var(--primary); }
+  input[type=text] {
+    width: 100%;
+    font: inherit;
+    font-size: 1.1rem;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  input[type=text]:focus { outline: none; border-color: var(--primary); }
+  .flash {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .flash .word { font-size: 2rem; font-weight: 700; }
+  .flash .hint { color: var(--muted); margin-top: 8px; }
+  .level-badge { display: inline-block; padding: 2px 10px; border-radius: 99px; background: var(--primary); color: var(--primary-ink); font-weight: 700; font-size: .85rem; }
+  .result-big { font-size: 3rem; font-weight: 800; margin: 8px 0; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header>
+  <h1 id="home-link" title="Zpět na úvod">Angličtina krok za krokem</h1>
+  <div class="stats">
+    <span title="Získané body">⭐ <b id="xp">0</b> XP</span>
+    <span title="Dny v řadě">🔥 <b id="streak">0</b></span>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<script>
+"use strict";
+
+// ---------- Content ----------
+const LEVELS = [
+  { id: "A1", name: "Začátečník", desc: "Základní slova a jednoduché věty." },
+  { id: "A2", name: "Mírně pokročilý", desc: "Běžné situace, minulý čas." },
+  { id: "B1", name: "Středně pokročilý", desc: "Cestování, práce, názory." },
+  { id: "B2", name: "Pokročilý", desc: "Abstraktní témata, složitější gramatika." },
+  { id: "C1", name: "Velmi pokročilý", desc: "Idiomy, nuance, formální styl." }
+];
+
+// vocab: [english, czech]
+// sentences: [english sentence, czech translation]
+// gaps: [sentence with ___, correct answer, [distractors], czech hint]
+const CONTENT = {
+  A1: {
+    vocab: [
+      ["dog", "pes"], ["cat", "kočka"], ["house", "dům"], ["water", "voda"],
+      ["apple", "jablko"], ["book", "kniha"], ["friend", "kamarád"], ["school", "škola"],
+      ["red", "červený"], ["big", "velký"], ["eat", "jíst"], ["sleep", "spát"],
+      ["mother", "matka"], ["car", "auto"], ["today", "dnes"]
+    ],
+    sentences: [
+      ["I have a dog", "Mám psa"],
+      ["She is my friend", "Ona je moje kamarádka"],
+      ["The cat is black", "Kočka je černá"],
+      ["We go to school", "Chodíme do školy"],
+      ["I like apples", "Mám rád jablka"],
+      ["This is my house", "Tohle je můj dům"]
+    ],
+    gaps: [
+      ["I ___ a student.", "am", ["is", "are"], "Jsem student."],
+      ["She ___ two brothers.", "has", ["have", "is"], "Má dva bratry."],
+      ["They ___ from Prague.", "are", ["is", "am"], "Jsou z Prahy."],
+      ["___ you like coffee?", "Do", ["Does", "Are"], "Máš rád kávu?"],
+      ["He ___ football every day.", "plays", ["play", "playing"], "Hraje fotbal každý den."],
+      ["There ___ a book on the table.", "is", ["are", "be"], "Na stole je kniha."]
+    ]
+  },
+  A2: {
+    vocab: [
+      ["yesterday", "včera"], ["weather", "počasí"], ["journey", "cesta"], ["cheap", "levný"],
+      ["expensive", "drahý"], ["borrow", "půjčit si"], ["remember", "pamatovat si"], ["forget", "zapomenout"],
+      ["kitchen", "kuchyně"], ["neighbour", "soused"], ["healthy", "zdravý"], ["arrive", "přijet"],
+      ["ticket", "lístek"], ["choose", "vybrat"], ["early", "brzy"]
+    ],
+    sentences: [
+      ["I went to the cinema yesterday", "Včera jsem šel do kina"],
+      ["The weather was very nice", "Počasí bylo velmi hezké"],
+      ["Can I borrow your pen", "Můžu si půjčit tvé pero"],
+      ["We arrived early in the morning", "Přijeli jsme brzy ráno"],
+      ["She bought a cheap ticket", "Koupila levný lístek"],
+      ["I forgot my keys at home", "Zapomněl jsem klíče doma"]
+    ],
+    gaps: [
+      ["Last year we ___ to Italy.", "went", ["go", "gone"], "Loni jsme jeli do Itálie."],
+      ["I ___ watching TV when he called.", "was", ["were", "am"], "Díval jsem se na televizi, když zavolal."],
+      ["This car is ___ than mine.", "faster", ["fast", "fastest"], "Tohle auto je rychlejší než moje."],
+      ["She has never ___ sushi.", "eaten", ["ate", "eat"], "Nikdy nejedla sushi."],
+      ["We are ___ to visit grandma tomorrow.", "going", ["go", "went"], "Zítra se chystáme navštívit babičku."],
+      ["How ___ sugar do you need?", "much", ["many", "lot"], "Kolik cukru potřebuješ?"]
+    ]
+  },
+  B1: {
+    vocab: [
+      ["opinion", "názor"], ["improve", "zlepšit"], ["advice", "rada"], ["although", "přestože"],
+      ["achieve", "dosáhnout"], ["employee", "zaměstnanec"], ["suggest", "navrhnout"], ["reliable", "spolehlivý"],
+      ["environment", "životní prostředí"], ["afford", "dovolit si (finančně)"], ["complain", "stěžovat si"], ["career", "kariéra"],
+      ["decrease", "snížit se"], ["accommodation", "ubytování"], ["sudden", "náhlý"]
+    ],
+    sentences: [
+      ["In my opinion this is a good idea", "Podle mého názoru je to dobrý nápad"],
+      ["I have been learning English for three years", "Učím se anglicky tři roky"],
+      ["If it rains we will stay at home", "Pokud bude pršet, zůstaneme doma"],
+      ["She suggested going to the museum", "Navrhla jít do muzea"],
+      ["We could not afford a new car", "Nemohli jsme si dovolit nové auto"],
+      ["The hotel was booked in advance", "Hotel byl zarezervován předem"]
+    ],
+    gaps: [
+      ["If I ___ more time, I would travel more.", "had", ["have", "will have"], "Kdybych měl víc času, cestoval bych víc."],
+      ["I have lived here ___ 2015.", "since", ["for", "from"], "Bydlím tu od roku 2015."],
+      ["The letter ___ sent yesterday.", "was", ["is", "has"], "Dopis byl odeslán včera."],
+      ["You ___ wear a helmet; it's the law.", "must", ["might", "could"], "Musíš nosit helmu, je to zákon."],
+      ["She is used to ___ early.", "getting up", ["get up", "got up"], "Je zvyklá vstávat brzy."],
+      ["I'm looking forward ___ you.", "to seeing", ["to see", "seeing"], "Těším se, až tě uvidím."]
+    ]
+  },
+  B2: {
+    vocab: [
+      ["thorough", "důkladný"], ["consequence", "důsledek"], ["reluctant", "neochotný"], ["sustainable", "udržitelný"],
+      ["undermine", "podkopat"], ["assess", "posoudit"], ["inevitable", "nevyhnutelný"], ["outcome", "výsledek"],
+      ["emphasize", "zdůraznit"], ["contribute", "přispět"], ["significant", "významný"], ["approach", "přístup"],
+      ["deny", "popřít"], ["widespread", "rozšířený"], ["evidence", "důkaz"]
+    ],
+    sentences: [
+      ["Had I known I would have come earlier", "Kdybych to věděl, přišel bych dřív"],
+      ["The project was completed despite the difficulties", "Projekt byl dokončen navzdory potížím"],
+      ["He denied having taken the money", "Popřel, že vzal peníze"],
+      ["Not only is it cheap but also reliable", "Nejen že je to levné, ale také spolehlivé"],
+      ["The results must be assessed carefully", "Výsledky musí být pečlivě posouzeny"],
+      ["She is reluctant to change her approach", "Zdráhá se změnit svůj přístup"]
+    ],
+    gaps: [
+      ["If she had studied, she ___ the exam.", "would have passed", ["would pass", "had passed"], "Kdyby se učila, složila by zkoušku."],
+      ["By next year, they ___ the bridge.", "will have built", ["will build", "have built"], "Do příštího roku most postaví."],
+      ["I wish I ___ so much yesterday.", "hadn't eaten", ["didn't eat", "wouldn't eat"], "Kéž bych včera tolik nejedl."],
+      ["He is said ___ very rich.", "to be", ["being", "be"], "Říká se, že je velmi bohatý."],
+      ["___ the bad weather, the match went ahead.", "Despite", ["Although", "However"], "Navzdory špatnému počasí se zápas hrál."],
+      ["It's high time we ___ home.", "went", ["go", "will go"], "Je nejvyšší čas jít domů."]
+    ]
+  },
+  C1: {
+    vocab: [
+      ["meticulous", "pečlivý do detailu"], ["ubiquitous", "všudypřítomný"], ["ambiguous", "dvojznačný"], ["alleviate", "zmírnit"],
+      ["scrutinize", "podrobně zkoumat"], ["pragmatic", "pragmatický"], ["unprecedented", "bezprecedentní"], ["detrimental", "škodlivý"],
+      ["eloquent", "výmluvný"], ["concede", "připustit"], ["resilient", "odolný"], ["advocate", "obhajovat"],
+      ["discrepancy", "nesoulad"], ["mitigate", "zmírnit (dopad)"], ["tentative", "předběžný"]
+    ],
+    sentences: [
+      ["Never before had I seen such a view", "Nikdy předtím jsem neviděl takový výhled"],
+      ["Little did they know what was coming", "Netušili, co přijde"],
+      ["The proposal was met with considerable scepticism", "Návrh se setkal se značnou skepsí"],
+      ["Were it not for her help we would have failed", "Nebýt její pomoci, selhali bychom"],
+      ["He conceded that the plan had flaws", "Připustil, že plán měl nedostatky"],
+      ["The data revealed a striking discrepancy", "Data odhalila výrazný nesoulad"]
+    ],
+    gaps: [
+      ["Hardly ___ arrived when it started to rain.", "had we", ["we had", "did we"], "Sotva jsme dorazili, začalo pršet."],
+      ["It's a long shot, but it's worth a ___.", "try", ["trial", "test"], "Je to risk, ale stojí za pokus."],
+      ["She takes everything with a pinch of ___.", "salt", ["sugar", "pepper"], "Všechno bere s rezervou."],
+      ["___ he to resign, the company would struggle.", "Were", ["Was", "If"], "Kdyby odstoupil, firma by měla potíže."],
+      ["The new policy is bound ___ controversy.", "to cause", ["causing", "cause"], "Nová politika jistě vyvolá kontroverzi."],
+      ["Let's not beat around the ___.", "bush", ["tree", "house"], "Nechoďme kolem horké kaše."]
+    ]
+  }
+};
+
+const MODES = [
+  { id: "flash", name: "Kartičky", icon: "🃏", desc: "Projdi si slovíčka, otoč kartu a ohodnoť se." },
+  { id: "quiz", name: "Výběr překladu", icon: "✅", desc: "Vyber správný český význam anglického slova." },
+  { id: "write", name: "Psaní slovíček", icon: "⌨️", desc: "Napiš anglické slovo podle českého zadání." },
+  { id: "build", name: "Skládání vět", icon: "🧩", desc: "Poskládej anglickou větu ze slov." },
+  { id: "gap", name: "Doplňování", icon: "✏️", desc: "Doplň chybějící slovo do věty (gramatika)." }
+];
+
+const ROUND_SIZE = 8;
+const STORE_KEY = "english-app-v1";
+
+// ---------- State ----------
+const defaultState = () => ({ level: null, xp: 0, streak: 0, lastDay: null, best: {} });
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    return raw ? { ...defaultState(), ...JSON.parse(raw) } : defaultState();
+  } catch (e) {
+    return defaultState();
+  }
+}
+
+function saveState() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable */ }
+}
+
+let state = loadState();
+const app = document.getElementById("app");
+
+// ---------- Helpers ----------
+const shuffle = arr => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+const normalize = s => s.trim().toLowerCase().replace(/[.,!?]/g, "").replace(/\s+/g, " ");
+
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-GB";
+  u.rate = .9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+
+function renderStats() {
+  document.getElementById("xp").textContent = state.xp;
+  document.getElementById("streak").textContent = state.streak;
+}
+
+function addXp(points) {
+  state.xp += points;
+  const today = todayStr();
+  if (state.lastDay !== today) {
+    const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+    state.streak = state.lastDay === yesterday ? state.streak + 1 : 1;
+    state.lastDay = today;
+  }
+  saveState();
+  renderStats();
+}
+
+// ---------- Screens ----------
+function showLevelSelect() {
+  app.innerHTML = `
+    <div class="card">
+      <h2>Jakou máš úroveň angličtiny?</h2>
+      <p class="muted">Vyber pokročilost podle evropského referenčního rámce (CEFR). Kdykoli ji můžeš změnit.</p>
+      <div class="grid" id="levels"></div>
+    </div>`;
+  const box = document.getElementById("levels");
+  LEVELS.forEach(l => {
+    const b = document.createElement("button");
+    b.className = "option" + (state.level === l.id ? " selected" : "");
+    b.innerHTML = `<span class="tag">${l.id} · ${esc(l.name)}</span><small>${esc(l.desc)}</small>`;
+    b.onclick = () => { state.level = l.id; saveState(); showMenu(); };
+    box.appendChild(b);
+  });
+}
+
+function showMenu() {
+  const level = LEVELS.find(l => l.id === state.level);
+  app.innerHTML = `
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <span class="level-badge">${level.id}</span>
+          <strong style="margin-left:6px">${esc(level.name)}</strong>
+        </div>
+        <button class="btn secondary" id="change-level">Změnit úroveň</button>
+      </div>
+    </div>
+    <div class="grid" id="modes"></div>`;
+  document.getElementById("change-level").onclick = showLevelSelect;
+  const box = document.getElementById("modes");
+  MODES.forEach(m => {
+    const best = state.best[`${state.level}-${m.id}`];
+    const b = document.createElement("button");
+    b.className = "option";
+    b.innerHTML = `<span class="tag">${m.icon} ${esc(m.name)}</span><small>${esc(m.desc)}</small>` +
+      (best !== undefined ? `<small>Nejlepší výsledek: ${best} %</small>` : "");
+    b.onclick = () => startRound(m.id);
+    box.appendChild(b);
+  });
+}
+
+// ---------- Round engine ----------
+let round = null;
+
+function buildQuestions(mode) {
+  const c = CONTENT[state.level];
+  if (mode === "build") return shuffle(c.sentences).slice(0, ROUND_SIZE);
+  if (mode === "gap") return shuffle(c.gaps).slice(0, ROUND_SIZE);
+  return shuffle(c.vocab).slice(0, ROUND_SIZE);
+}
+
+function startRound(mode) {
+  round = { mode, questions: buildQuestions(mode), index: 0, correct: 0 };
+  renderQuestion();
+}
+
+function frame(title, inner) {
+  const pct = Math.round((round.index / round.questions.length) * 100);
+  app.innerHTML = `
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <span class="muted" style="margin:0">${esc(title)} · ${round.index + 1}/${round.questions.length}</span>
+        <button class="btn secondary" id="quit" style="padding:6px 12px">Ukončit</button>
+      </div>
+      <div class="progress"><div style="width:${pct}%"></div></div>
+      ${inner}
+      <div class="feedback" id="feedback"></div>
+      <div class="row" style="margin-top:16px"><button class="btn hidden" id="next">Pokračovat</button></div>
+    </div>`;
+  document.getElementById("quit").onclick = showMenu;
+  document.getElementById("next").onclick = nextQuestion;
+}
+
+function answer(isCorrect, correctText) {
+  const fb = document.getElementById("feedback");
+  if (isCorrect) {
+    round.correct++;
+    addXp(10);
+    fb.className = "feedback ok";
+    fb.textContent = "Správně! +10 XP";
+  } else {
+    fb.className = "feedback bad";
+    fb.innerHTML = `Správná odpověď: <strong>${esc(correctText)}</strong>`;
+  }
+  const next = document.getElementById("next");
+  next.classList.remove("hidden");
+  next.focus();
+}
+
+function nextQuestion() {
+  round.index++;
+  if (round.index >= round.questions.length) showResult();
+  else renderQuestion();
+}
+
+function renderQuestion() {
+  ({ flash: renderFlash, quiz: renderQuiz, write: renderWrite, build: renderBuild, gap: renderGap })[round.mode]();
+}
+
+function renderFlash() {
+  const [en, cz] = round.questions[round.index];
+  frame("Kartičky", `
+    <div class="flash" id="flash">
+      <div class="word" id="flash-word">${esc(en)}</div>
+      <div class="hint" id="flash-hint">Klikni pro otočení</div>
+    </div>
+    <div class="row hidden" id="rate" style="justify-content:center">
+      <button class="btn secondary" id="rate-no">Nevěděl/a jsem</button>
+      <button class="btn" id="rate-yes">Věděl/a jsem</button>
+    </div>`);
+  document.getElementById("flash").onclick = () => {
+    document.getElementById("flash-word").textContent = cz;
+    document.getElementById("flash-hint").textContent = en;
+    document.getElementById("rate").classList.remove("hidden");
+  };
+  document.getElementById("rate-yes").onclick = () => { round.correct++; addXp(5); nextQuestion(); };
+  document.getElementById("rate-no").onclick = nextQuestion;
+}
+
+function renderQuiz() {
+  const [en, cz] = round.questions[round.index];
+  const distractors = shuffle(CONTENT[state.level].vocab.filter(v => v[1] !== cz)).slice(0, 3).map(v => v[1]);
+  const options = shuffle([cz, ...distractors]);
+  frame("Výběr překladu", `
+    <div class="prompt">${esc(en)} <button class="chip speak" id="say" title="Přehrát výslovnost">🔊</button></div>
+    <div class="grid" id="opts"></div>`);
+  document.getElementById("say").onclick = () => speak(en);
+  const box = document.getElementById("opts");
+  options.forEach(o => {
+    const b = document.createElement("button");
+    b.className = "option";
+    b.textContent = o;
+    b.onclick = () => {
+      box.querySelectorAll("button").forEach(x => {
+        x.disabled = true;
+        if (x.textContent === cz) x.classList.add("correct");
+      });
+      if (o !== cz) b.classList.add("wrong");
+      answer(o === cz, cz);
+    };
+    box.appendChild(b);
+  });
+}
+
+function renderWrite() {
+  const [en, cz] = round.questions[round.index];
+  frame("Psaní slovíček", `
+    <p class="muted">Napiš anglicky:</p>
+    <div class="prompt">${esc(cz)}</div>
+    <input type="text" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="anglické slovo">
+    <button class="btn" id="check">Zkontrolovat</button>`);
+  const inp = document.getElementById("inp");
+  const check = document.getElementById("check");
+  inp.focus();
+  const submit = () => {
+    if (!inp.value.trim() || inp.disabled) return;
+    inp.disabled = true;
+    check.disabled = true;
+    const ok = normalize(inp.value) === normalize(en);
+    answer(ok, en);
+  };
+  check.onclick = submit;
+  inp.onkeydown = e => { if (e.key === "Enter") submit(); };
+}
+
+function renderBuild() {
+  const [en, cz] = round.questions[round.index];
+  const words = shuffle(en.split(" "));
+  const picked = [];
+  frame("Skládání vět", `
+    <p class="muted">Přelož do angličtiny:</p>
+    <div class="prompt">${esc(cz)}</div>
+    <div class="chips" id="target"></div>
+    <div class="chips" id="pool" style="border-style:solid"></div>
+    <button class="btn" id="check" disabled>Zkontrolovat</button>`);
+  const target = document.getElementById("target");
+  const pool = document.getElementById("pool");
+  const check = document.getElementById("check");
+  let done = false;
+
+  const draw = () => {
+    target.innerHTML = "";
+    pool.innerHTML = "";
+    picked.forEach((w, i) => {
+      const c = document.createElement("button");
+      c.className = "chip";
+      c.textContent = w.text;
+      c.onclick = () => { if (done) return; picked.splice(i, 1); draw(); };
+      target.appendChild(c);
+    });
+    words.forEach((text, id) => {
+      if (picked.some(p => p.id === id)) return;
+      const c = document.createElement("button");
+      c.className = "chip";
+      c.textContent = text;
+      c.onclick = () => { if (done) return; picked.push({ id, text }); draw(); };
+      pool.appendChild(c);
+    });
+    check.disabled = done || picked.length !== words.length;
+  };
+  draw();
+
+  check.onclick = () => {
+    done = true;
+    check.disabled = true;
+    const built = picked.map(p => p.text).join(" ");
+    answer(normalize(built) === normalize(en), en);
+  };
+}
+
+function renderGap() {
+  const [sentence, correct, distractors, hint] = round.questions[round.index];
+  const options = shuffle([correct, ...distractors]);
+  frame("Doplňování", `
+    <div class="prompt">${esc(sentence).replace("___", "<u>&nbsp;&nbsp;?&nbsp;&nbsp;</u>")}</div>
+    <p class="muted">${esc(hint)}</p>
+    <div class="grid" id="opts"></div>`);
+  const box = document.getElementById("opts");
+  options.forEach(o => {
+    const b = document.createElement("button");
+    b.className = "option";
+    b.textContent = o;
+    b.onclick = () => {
+      box.querySelectorAll("button").forEach(x => {
+        x.disabled = true;
+        if (x.textContent === correct) x.classList.add("correct");
+      });
+      if (o !== correct) b.classList.add("wrong");
+      answer(o === correct, correct);
+    };
+    box.appendChild(b);
+  });
+}
+
+function showResult() {
+  const pct = Math.round((round.correct / round.questions.length) * 100);
+  const key = `${state.level}-${round.mode}`;
+  const isBest = state.best[key] === undefined || pct > state.best[key];
+  if (isBest) { state.best[key] = pct; saveState(); }
+  const idx = LEVELS.findIndex(l => l.id === state.level);
+  const nextLevel = pct >= 90 && idx < LEVELS.length - 1 ? LEVELS[idx + 1] : null;
+  const msg = pct >= 90 ? "Výborně!" : pct >= 60 ? "Dobrá práce!" : "Nevzdávej to, příště to bude lepší.";
+  app.innerHTML = `
+    <div class="card" style="text-align:center">
+      <h2>${msg}</h2>
+      <div class="result-big">${pct} %</div>
+      <p class="muted">${round.correct} z ${round.questions.length} správně${isBest ? " · nový osobní rekord" : ""}</p>
+      ${nextLevel ? `<p>Zdá se, že ti úroveň ${state.level} jde. Zkus <strong>${nextLevel.id} · ${esc(nextLevel.name)}</strong>.</p>` : ""}
+      <div class="row" style="justify-content:center">
+        <button class="btn" id="again">Znovu</button>
+        <button class="btn secondary" id="menu">Zpět na výběr</button>
+        ${nextLevel ? `<button class="btn secondary" id="up">Přejít na ${nextLevel.id}</button>` : ""}
+      </div>
+    </div>`;
+  document.getElementById("again").onclick = () => startRound(round.mode);
+  document.getElementById("menu").onclick = showMenu;
+  if (nextLevel) document.getElementById("up").onclick = () => { state.level = nextLevel.id; saveState(); showMenu(); };
+}
+
+// ---------- Init ----------
+document.getElementById("home-link").onclick = () => (state.level ? showMenu() : showLevelSelect());
+renderStats();
+state.level ? showMenu() : showLevelSelect();
+</script>
+</body>
+</html>
